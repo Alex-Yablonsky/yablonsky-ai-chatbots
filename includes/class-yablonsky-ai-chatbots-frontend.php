@@ -2,7 +2,7 @@
 
 defined('ABSPATH') || exit;
 
-final class Yablonsky_Secure_Chatbots_Frontend {
+final class Yablonsky_AI_Chatbots_Frontend {
     const ASSET_QUERY_KEY = 'ysc_adapter_asset';
     const ASSET_VERSION_QUERY_KEY = 'ysc_adapter_version';
 
@@ -13,14 +13,15 @@ final class Yablonsky_Secure_Chatbots_Frontend {
         add_action('template_redirect', array($this, 'serve_adapter_asset'), 0);
         add_action('wp_enqueue_scripts', array($this, 'enqueue_assets'), 20);
         add_action('wp_footer', array($this, 'render_public_config'), 5);
+        add_action('wp_footer', array($this, 'render_loader_fallback'), PHP_INT_MAX);
     }
 
     public function serve_adapter_asset() {
-        if (!isset($_GET[self::ASSET_QUERY_KEY])) {
+        $asset_value = filter_input(INPUT_GET, self::ASSET_QUERY_KEY, FILTER_UNSAFE_RAW);
+        if ($asset_value === null || $asset_value === false) {
             return;
         }
 
-        $asset_value = wp_unslash($_GET[self::ASSET_QUERY_KEY]);
         if (!is_string($asset_value)) {
             status_header(404);
             exit;
@@ -29,11 +30,11 @@ final class Yablonsky_Secure_Chatbots_Frontend {
         $asset = sanitize_key($asset_value);
         $assets = array(
             'frontend' => array(
-                'path' => YSC_WP_PLUGIN_DIR . 'public/css/frontend.css',
+                'path' => YAI_CHATBOTS_PLUGIN_DIR . 'public/css/frontend.css',
                 'type' => 'text/css; charset=UTF-8',
             ),
             'loader' => array(
-                'path' => YSC_WP_PLUGIN_DIR . 'public/js/loader.js',
+                'path' => YAI_CHATBOTS_PLUGIN_DIR . 'public/js/loader.js',
                 'type' => 'application/javascript; charset=UTF-8',
             ),
         );
@@ -43,7 +44,8 @@ final class Yablonsky_Secure_Chatbots_Frontend {
             exit;
         }
 
-        $method = isset($_SERVER['REQUEST_METHOD']) ? strtoupper((string) $_SERVER['REQUEST_METHOD']) : 'GET';
+        $request_method = filter_input(INPUT_SERVER, 'REQUEST_METHOD', FILTER_UNSAFE_RAW);
+        $method = is_string($request_method) ? strtoupper(sanitize_text_field($request_method)) : 'GET';
         if ($method !== 'GET' && $method !== 'HEAD') {
             status_header(405);
             header('Allow: GET, HEAD');
@@ -51,7 +53,8 @@ final class Yablonsky_Secure_Chatbots_Frontend {
         }
 
         $path = $assets[$asset]['path'];
-        if (!is_file($path) || !is_readable($path)) {
+        $filesystem = $this->filesystem();
+        if (!$filesystem->is_file($path) || !$filesystem->is_readable($path)) {
             status_header(404);
             exit;
         }
@@ -61,7 +64,7 @@ final class Yablonsky_Secure_Chatbots_Frontend {
         header('Cache-Control: public, max-age=604800');
         header('X-Content-Type-Options: nosniff');
 
-        $size = filesize($path);
+        $size = $filesystem->size($path);
         if ($size !== false) {
             header('Content-Length: ' . (string) $size);
         }
@@ -70,12 +73,18 @@ final class Yablonsky_Secure_Chatbots_Frontend {
             exit;
         }
 
-        readfile($path);
+        $contents = $filesystem->get_contents($path);
+        if ($contents === false) {
+            status_header(404);
+            exit;
+        }
+
+        echo $contents; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Fixed allowlisted bundled JS/CSS must be emitted byte-for-byte.
         exit;
     }
 
     public function enqueue_assets() {
-        $this->settings = Yablonsky_Secure_Chatbots_Settings::get_all();
+        $this->settings = Yablonsky_AI_Chatbots_Settings::get_all();
         $this->eligible = $this->should_load($this->settings);
         if (!$this->eligible) {
             return;
@@ -85,16 +94,36 @@ final class Yablonsky_Secure_Chatbots_Frontend {
             'yablonsky-secure-chatbots',
             $this->asset_url('frontend'),
             array(),
-            YSC_WP_VERSION
+            YAI_CHATBOTS_VERSION
         );
 
         wp_enqueue_script(
             'yablonsky-secure-chatbots-loader',
             $this->asset_url('loader'),
             array(),
-            YSC_WP_VERSION,
+            YAI_CHATBOTS_VERSION,
             true
         );
+    }
+
+    public function render_loader_fallback() {
+        if (!$this->eligible) {
+            return;
+        }
+
+        if (wp_script_is('yablonsky-secure-chatbots-loader', 'done')) {
+            return;
+        }
+
+        wp_enqueue_script(
+            'yablonsky-secure-chatbots-loader',
+            $this->asset_url('loader'),
+            array(),
+            YAI_CHATBOTS_VERSION,
+            true
+        );
+
+        print_footer_scripts();
     }
 
     public function render_public_config() {
@@ -103,7 +132,7 @@ final class Yablonsky_Secure_Chatbots_Frontend {
         }
 
         $sdk_url = (string) $this->settings['sdk_url'];
-        $base = Yablonsky_Secure_Chatbots_Settings::backend_base_from_sdk($sdk_url);
+        $base = Yablonsky_AI_Chatbots_Settings::backend_base_from_sdk($sdk_url);
         if ($base === '') {
             return;
         }
@@ -118,11 +147,27 @@ final class Yablonsky_Secure_Chatbots_Frontend {
         );
     }
 
+
+    /**
+     * Read bundled public assets through the WordPress filesystem abstraction.
+     * Direct transport avoids credential prompts for read-only files already readable by PHP.
+     */
+    private function filesystem() {
+        if (!class_exists('WP_Filesystem_Base')) {
+            require_once ABSPATH . 'wp-admin/includes/class-wp-filesystem-base.php';
+        }
+        if (!class_exists('WP_Filesystem_Direct')) {
+            require_once ABSPATH . 'wp-admin/includes/class-wp-filesystem-direct.php';
+        }
+
+        return new WP_Filesystem_Direct(null);
+    }
+
     private function asset_url($asset) {
         return add_query_arg(
             array(
                 self::ASSET_QUERY_KEY => $asset,
-                self::ASSET_VERSION_QUERY_KEY => YSC_WP_VERSION,
+                self::ASSET_VERSION_QUERY_KEY => YAI_CHATBOTS_VERSION,
             ),
             home_url('/')
         );
@@ -133,8 +178,8 @@ final class Yablonsky_Secure_Chatbots_Frontend {
             return false;
         }
 
-        if (!Yablonsky_Secure_Chatbots_Sanitizer::is_valid_sdk_url($settings['sdk_url'])
-            || !Yablonsky_Secure_Chatbots_Sanitizer::is_uuid($settings['chatbot_id'])) {
+        if (!Yablonsky_AI_Chatbots_Sanitizer::is_valid_sdk_url($settings['sdk_url'])
+            || !Yablonsky_AI_Chatbots_Sanitizer::is_uuid($settings['chatbot_id'])) {
             return false;
         }
 
@@ -145,7 +190,7 @@ final class Yablonsky_Secure_Chatbots_Frontend {
             return false;
         }
 
-        $excluded = Yablonsky_Secure_Chatbots_Settings::normalise_page_ids($settings['excluded_page_ids']);
+        $excluded = Yablonsky_AI_Chatbots_Settings::normalise_page_ids($settings['excluded_page_ids']);
         if ($excluded && function_exists('is_page') && is_page($excluded)) {
             return false;
         }

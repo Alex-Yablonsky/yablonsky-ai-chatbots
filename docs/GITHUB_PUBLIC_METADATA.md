@@ -4,11 +4,11 @@
 
 Preferred new repository slug:
 
-`yablonsky-ai-chatbots-wordpress`
+`yablonsky-ai-chatbots`
 
 ## Display name
 
-`Yablonsky AI Chatbots for WordPress`
+`Yablonsky AI Chatbots`
 
 ## Description
 

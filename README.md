@@ -1,10 +1,10 @@
-# Yablonsky AI Chatbots for WordPress
+# Yablonsky AI Chatbots
 
-**Yablonsky AI Chatbots for WordPress** is the native WordPress adapter for **Yablonsky AI Chatbots**.
+**Yablonsky AI Chatbots** includes a native WordPress adapter that connects WordPress sites to the canonical Yablonsky AI Chatbots runtime.
 
 It connects a WordPress website to the canonical Yablonsky AI Chatbots runtime while WordPress keeps only local integration settings, page eligibility and safe loading. AI conversations, intelligence, security and conversation continuity remain on Yablonsky AI.
 
-Current release: **v0.1.2**
+Current version: **v0.1.4**
 
 Developed and maintained by [Yablonsky.io](https://yablonsky.io/).
 
@@ -18,21 +18,15 @@ Yablonsky AI workspace: [ai.yablonsky.io](https://ai.yablonsky.io/)
 
 Use this stable link on your website or documentation when you want visitors to download the latest published WordPress package:
 
-https://github.com/Alex-Yablonsky/yablonsky-ai-chatbots-wordpress/releases/latest/download/yablonsky-ai-chatbots-wordpress.zip
+https://github.com/Alex-Yablonsky/yablonsky-ai-chatbots/releases/latest/download/yablonsky-ai-chatbots.zip
 
 Current version-specific installer:
 
-https://github.com/Alex-Yablonsky/yablonsky-ai-chatbots-wordpress/releases/download/v0.1.2/yablonsky-ai-chatbots-wordpress-0.1.2.zip
-
-Current installer SHA-256:
-
-```text
-91a24756cda6526e92816de6088a26cf5970231980a5a892606f6a8808a8449c
-```
+https://github.com/Alex-Yablonsky/yablonsky-ai-chatbots/releases/download/v0.1.4/yablonsky-ai-chatbots-0.1.4.zip
 
 Latest release page:
 
-https://github.com/Alex-Yablonsky/yablonsky-ai-chatbots-wordpress/releases/latest
+https://github.com/Alex-Yablonsky/yablonsky-ai-chatbots/releases/latest
 
 > Use the installable release ZIP above for WordPress. GitHub's generic **Code → Download ZIP** archive is a source-code archive and should not be treated as the canonical WordPress installer.
 
@@ -143,10 +137,14 @@ If you were looking for a "plugin key", this Chatbot ID is the value the WordPre
 1. Download the current installable ZIP from the **Download** section above.
 2. In WordPress Admin, open **Plugins → Add New → Upload Plugin**.
 3. Upload the installable ZIP.
-4. Install and activate **Yablonsky AI Chatbots for WordPress**.
+4. Install and activate **Yablonsky AI Chatbots**.
 5. Open **Settings → AI Chatbots**.
 
-When upgrading an existing installation, WordPress may show the existing technical plugin directory and offer to replace the installed version. This is expected because the compatibility-preserving plugin directory remains `yablonsky-secure-chatbots`.
+### Upgrade from 0.1.3 and earlier
+
+Version 0.1.4 adopts the canonical WordPress.org packaging identity `yablonsky-ai-chatbots`. Existing 0.1.3 and earlier installations used the historical folder `yablonsky-secure-chatbots`.
+
+Leave the historical package installed while activating 0.1.4. The canonical plugin uses a collision-free PHP bootstrap, migrates `yablonsky_secure_chatbots_settings` to `yablonsky_ai_chatbots_settings`, and silently deactivates the historical site-level predecessor during activation. The historical package remains installed and its existing option is mirrored for rollback until you complete production acceptance. Only delete the historical package after the canonical plugin has passed live runtime and continuity regression checks.
 
 ## 6. Configure the WordPress adapter
 
@@ -177,6 +175,15 @@ Verify that:
 - the website remains usable if the Yablonsky AI service is temporarily unavailable.
 
 For production acceptance, test at least Chrome, Firefox and Safari. Mobile Safari should also be tested for customer-facing websites.
+
+## External service disclosure
+
+This WordPress adapter connects to **Yablonsky AI** at https://ai.yablonsky.io/ to load the canonical chatbot runtime and process conversations. When enabled, the visitor's browser sends the configured public Chatbot ID, current website origin, chatbot messages and technical session metadata required for security and conversation continuity to Yablonsky AI.
+
+The plugin does not store AI provider API keys, private chatbot secrets, bearer tokens or session credentials in WordPress.
+
+- Terms of Service: https://ai.yablonsky.io/policies/terms
+- Privacy Policy: https://yablonsky.io/privacy-policy
 
 ## Architecture boundary
 
@@ -322,18 +329,20 @@ When a compatible consent UI emits `consent:open`, the adopted AI Chatbot frame 
 
 ## Upgrade compatibility
 
-The public product name is **Yablonsky AI Chatbots for WordPress**, but several existing technical identifiers intentionally retain the previous compatibility namespace.
+The canonical WordPress.org packaging identity is now:
 
-Do not rename these only for branding:
+- plugin slug / installed directory: `yablonsky-ai-chatbots`;
+- main plugin file: `yablonsky-ai-chatbots.php`;
+- text domain: `yablonsky-ai-chatbots`.
 
-- installed plugin directory: `yablonsky-secure-chatbots`;
-- WordPress text domain: `yablonsky-secure-chatbots`;
-- existing WordPress option keys;
+Runtime compatibility identifiers that are not part of the public package identity remain intentionally unchanged:
+
+- canonical settings option `yablonsky_ai_chatbots_settings` with a compatibility mirror to the historical option;
 - existing PHP class names;
-- stable internal routes and query keys;
+- stable internal settings page slug and script/style handles;
 - canonical SDK path: `/e/yablonsky/secure-chatbots/sdk.js`.
 
-These identifiers are compatibility contracts and are not the public product name.
+This keeps the WordPress.org package clean without changing the Core/session/continuity contract.
 
 ## Support and product information
 
@@ -359,7 +368,7 @@ AI workspace and account access: [ai.yablonsky.io](https://ai.yablonsky.io/)
 
 ## Disclaimer
 
-Yablonsky AI Chatbots for WordPress is an independent open-source project and is not affiliated with, endorsed by, or sponsored by the WordPress Foundation, Automattic, or related trademark owners.
+Yablonsky AI Chatbots is an independent open-source project and is not affiliated with, endorsed by, or sponsored by the WordPress Foundation, Automattic, or related trademark owners.
 
 WordPress and related product names are trademarks of their respective owners. They are used here only to describe compatibility.
 
@@ -368,4 +377,3 @@ Yablonsky AI Chatbots is a hosted Yablonsky.io product. Availability of AI model
 ## License
 
 GPL-2.0-or-later. See [`LICENSE`](LICENSE).
-

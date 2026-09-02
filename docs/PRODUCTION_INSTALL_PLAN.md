@@ -1,9 +1,12 @@
-# Controlled Production Install Plan
+# Controlled Production Install Plan — 0.1.4
 
-1. Create the normal pre-install backup/snapshot and retain the currently working WordPress state.
-2. In WordPress Admin, upload the installable ZIP and activate **Yablonsky AI Chatbots for WordPress**. Leave the adapter disabled if this is a fresh installation.
-3. Open **Settings -> AI Chatbots** and configure only the canonical SDK URL and the approved public AI Chatbot UUID. Keep preview/session/provider data out of WordPress.
-4. On the canonical Yablonsky AI Chatbots service, verify the selected AI Chatbot is active and the exact WordPress site origin is approved.
-5. Enable the adapter, then verify the generated CSS/loader URLs use the same-origin `ysc_adapter_asset` endpoint, both return HTTP 200, and exactly one canonical SDK request plus one non-preview embed appear on an allowed page; verify an excluded page has neither.
-6. Browser acceptance: desktop open/close, mobile near-full-screen + safe areas + keyboard/composer, consent overlay coexistence, console/network review, accessibility keyboard/focus and real message round-trip.
-7. If any gate fails, disable the adapter first. If needed, deactivate/remove this plugin and restore the known-good WordPress snapshot/backup. No backend/chatbot data rollback is performed by this plugin.
+1. Keep the currently working historical 0.1.3 package installed and active; do not delete it before migration.
+2. Upload `yablonsky-ai-chatbots-0.1.4.zip` and activate **Yablonsky AI Chatbots**. The canonical bootstrap is collision-free, migrates the historical settings option, and silently deactivates the site-level historical predecessor during activation.
+3. Confirm the old **Yablonsky AI Chatbots for WordPress 0.1.3** row is now inactive and **Yablonsky AI Chatbots 0.1.4** is active. Keep the old package installed as rollback insurance.
+4. Open **Settings -> AI Chatbots** and verify the existing enabled state, canonical SDK URL, public Chatbot ID, exclusions, consent bridge and frame title survived migration.
+5. On the public site verify the same-origin `ysc_adapter_asset` transport, exactly one canonical SDK request, exactly one non-preview embed/iframe, launcher open/close behavior and a real message round-trip.
+6. Run the Yablonsky.io ↔ ai.yablonsky.io continuity regression: conversation A on the site -> AI workspace -> message B -> return -> A+B continuity, plus open/closed state behavior.
+7. Run official Plugin Check against the final packaged 0.1.4.
+8. Only after all gates pass, delete the inactive historical 0.1.3 package and proceed to GitHub release publication.
+
+If any runtime gate fails, deactivate 0.1.4 and reactivate the still-installed historical 0.1.3 package. The historical settings option is kept mirrored on upgraded installations until the old package is deliberately removed.

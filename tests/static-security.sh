@@ -22,7 +22,7 @@ if grep -Ein '(localStorage|sessionStorage|dataset\.preview|previewToken\s*=|ses
 fi
 echo 'STATIC_BROWSER_CREDENTIAL_STORAGE=PASS'
 
-if grep -Ein '(googletagmanager|dataLayer|clickio)' "$PLUGIN/public/js/loader.js" "$PLUGIN/includes/class-yablonsky-secure-chatbots-frontend.php"; then
+if grep -Ein '(googletagmanager|dataLayer|clickio)' "$PLUGIN/public/js/loader.js" "$PLUGIN/includes/class-yablonsky-ai-chatbots-frontend.php"; then
   echo 'STATIC_GTM_CLICKIO_DEPENDENCY=FAIL'
   exit 1
 fi

@@ -16,7 +16,7 @@ const configNode = {
   dataset: {
     sdkUrl: 'https://ai.yablonsky.io/e/yablonsky/secure-chatbots/sdk.js',
     base: 'https://ai.yablonsky.io',
-    chatbotId: '019fe824-e26d-72bd-8623-6d6f27cbac5e',
+    chatbotId: '00000000-0000-4000-8000-000000000001',
     consentBridge: '1',
     frameTitle: 'Yablonsky.io AI assistant'
   }
@@ -25,7 +25,7 @@ const configNode = {
 const frame = {
   nodeType: 1,
   tagName: 'IFRAME',
-  src: 'https://ai.yablonsky.io/secure-chatbots/019fe824-e26d-72bd-8623-6d6f27cbac5e/embed?parent_origin=https%3A%2F%2Fyablonsky.io',
+  src: 'https://ai.yablonsky.io/secure-chatbots/00000000-0000-4000-8000-000000000001/embed?parent_origin=https%3A%2F%2Fyablonsky.io',
   classList: new ClassList(),
   attrs: {},
   setAttribute(k, v) { this.attrs[k] = v; }

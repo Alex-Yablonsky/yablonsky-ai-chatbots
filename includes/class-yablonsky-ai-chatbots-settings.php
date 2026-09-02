@@ -2,9 +2,10 @@
 
 defined('ABSPATH') || exit;
 
-final class Yablonsky_Secure_Chatbots_Settings {
-    const OPTION_NAME = 'yablonsky_secure_chatbots_settings';
-    const PAGE_SLUG = 'yablonsky-secure-chatbots';
+final class Yablonsky_AI_Chatbots_Settings {
+    const OPTION_NAME = 'yablonsky_ai_chatbots_settings';
+    const LEGACY_OPTION_NAME = 'yablonsky_secure_chatbots_settings';
+    const PAGE_SLUG = 'yablonsky-ai-chatbots';
 
     public static function defaults() {
         return array(
@@ -18,7 +19,10 @@ final class Yablonsky_Secure_Chatbots_Settings {
     }
 
     public static function get_all() {
-        $stored = get_option(self::OPTION_NAME, array());
+        $stored = get_option(self::OPTION_NAME, null);
+        if ($stored === null) {
+            $stored = get_option(self::LEGACY_OPTION_NAME, array());
+        }
         if (!is_array($stored)) {
             $stored = array();
         }
@@ -27,6 +31,32 @@ final class Yablonsky_Secure_Chatbots_Settings {
         $settings['excluded_page_ids'] = self::normalise_page_ids($settings['excluded_page_ids']);
 
         return $settings;
+    }
+
+
+    public static function migrate_legacy_option() {
+        if (get_option(self::OPTION_NAME, null) !== null) {
+            return;
+        }
+
+        $legacy = get_option(self::LEGACY_OPTION_NAME, null);
+        $initial = is_array($legacy) ? $legacy : self::defaults();
+
+        add_option(self::OPTION_NAME, $initial, '', false);
+    }
+
+    public static function mirror_legacy_option($old_value, $value) {
+        if (!is_array($value)) {
+            return;
+        }
+
+        // Mirror only upgraded installations that already have the historical option.
+        // Fresh canonical installs must not create legacy state.
+        if (get_option(self::LEGACY_OPTION_NAME, null) === null) {
+            return;
+        }
+
+        update_option(self::LEGACY_OPTION_NAME, $value, false);
     }
 
     public static function get($key, $fallback = null) {
