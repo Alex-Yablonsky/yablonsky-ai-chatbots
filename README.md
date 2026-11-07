@@ -358,6 +358,10 @@ Yablonsky AI workspace:
 
 https://ai.yablonsky.io/
 
+## Related Yablonsky WordPress Products
+
+For multilingual posts, pages, and store content, see the independent [Yablonsky Multilingual plugin for WordPress](https://yablonsky.io/multilingual/). For technical SEO and AI search visibility, see [Yablonsky SEO — GEO & AEO](https://yablonsky.io/seo/). For WordPress firewall and bot protection, see [Yablonsky Security](https://github.com/yablonsky-io/yablonsky-security). These plugins are optional and independently installed.
+
 ## Author
 
 Developed and maintained by [Yablonsky.io](https://yablonsky.io/).
